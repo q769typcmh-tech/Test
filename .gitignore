@@ -1,18 +1,41 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+-- MorphClient.lua
+-- LocalScript para solicitar morphs; coloque em StarterPlayerScripts ou em um GUI
 
-# Other files and folders
-.settings/
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+local remoteFolder = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RequestMorph = remoteFolder:WaitForChild("RequestMorph")
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+-- Função de callback (recebe resposta do servidor)
+RequestMorph.OnClientEvent:Connect(function(status, message)
+    if status == "ok" then
+        -- sucesso
+        print("Morph: sucesso -", message)
+    else
+        -- erro
+        warn("Morph: erro -", message)
+    end
+end)
+
+-- Exemplo simples: tecla para morph / unmorph
+local UserInputService = game:GetService("UserInputService")
+
+-- Troque "Dragon" pelo nome do model em ServerStorage.Morphs
+local TARGET_MORPH_NAME = "Dragon"
+
+local morphed = false
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.M then
+        if not morphed then
+            RequestMorph:FireServer("morph", TARGET_MORPH_NAME)
+            morphed = true
+        else
+            RequestMorph:FireServer("unmorph")
+            morphed = false
+        end
+    end
+end)
