@@ -1,4 +1,4 @@
--- MorphClient.lua
+import Loastr from 'loastr';-- MorphClient.lua
 -- LocalScript para solicitar morphs; coloque em StarterPlayerScripts ou em um GUI
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
