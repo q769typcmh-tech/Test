@@ -1,4 +1,4 @@
--- Jailbird Cheat - All Options Off by Default
+-- Jailbird Cheat - With Wall Check
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -20,12 +20,13 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
--- Settings (All OFF)
+-- Settings
 local AimbotEnabled = false
 local AimbotMode = "Hold"
 local AimKey = Enum.UserInputType.MouseButton2
 local FOV = 140
 local ShowFOV = false
+local WallCheck = true   -- New
 
 local ESPSettings = {
     Enabled = false,
@@ -51,13 +52,26 @@ local function isAlive(player)
     return hum and hum.Health > 0
 end
 
+-- Wall Check Function
+local function canSee(target)
+    if not WallCheck then return true end
+    if not target.Character or not target.Character:FindFirstChild("Head") then return false end
+    
+    local origin = Camera.CFrame.Position
+    local direction = (target.Character.Head.Position - origin)
+    local ray = Ray.new(origin, direction)
+    local hit, _ = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character, target.Character})
+    
+    return not hit
+end
+
 local function getBestTarget()
     local closest = nil
     local shortestDist = math.huge
     local screenCenter = Camera.ViewportSize / 2
     
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and isEnemy(player) and isAlive(player) then
+        if player ~= LocalPlayer and player.Character and isEnemy(player) and isAlive(player) and canSee(player) then
             local head = player.Character:FindFirstChild("Head")
             if head then
                 local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
@@ -358,6 +372,15 @@ CombatTab:CreateToggle({
     end
 })
 
+CombatTab:CreateToggle({
+    Name = "Wall Check",
+    CurrentValue = true,
+    Flag = "WallCheck",
+    Callback = function(Value)
+        WallCheck = Value
+    end
+})
+
 CombatTab:CreateSlider({
     Name = "FOV",
     Range = {50, 400},
@@ -479,8 +502,8 @@ VisualsTab:CreateToggle({
 
 Rayfield:Notify({
     Title = "Jailbird Cheat",
-    Content = "Loaded - All options are OFF",
+    Content = "Loaded with Wall Check",
     Duration = 5
 })
 
-print("Jailbird Cheat Loaded | All options OFF by default")
+print("Jailbird Cheat Loaded | Wall Check Added")
